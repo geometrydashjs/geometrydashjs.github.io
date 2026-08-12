@@ -140,24 +140,32 @@ Copyright (c) 2025-2026 Valentyn Kolesnikov <0009-0003-9608-3364@orcid.org>
         -webkit-overflow-scrolling: touch;
     }
 
+    /* Fixed title: single line, no clipped descenders, responsive */
     #menu h1 {
-        font-size: clamp(24px, 5vw, 40px);
+        font-size: clamp(26px, 7vw, 44px);
+        line-height: 1.2;
+        padding: 4px 0 8px;
         background: linear-gradient(90deg, #00ffcc, #00ccff, #ff00cc);
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 4px;
+        color: #00ccff; /* fallback if clip unsupported */
+        margin-bottom: 2px;
         text-align: center;
+        white-space: nowrap;
+        letter-spacing: 1px;
+        font-weight: 800;
+        max-width: 100%;
     }
 
     #menu p.subtitle {
         color: #aaa;
         margin-bottom: 12px;
-        font-size: clamp(12px, 2.2vw, 15px);
+        font-size: clamp(11px, 2.2vw, 15px);
         text-align: center;
+        max-width: 90%;
     }
 
-    /* Compact, capped grid — looks good at 100% desktop zoom */
     .levels-grid {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
@@ -294,11 +302,14 @@ Copyright (c) 2025-2026 Valentyn Kolesnikov <0009-0003-9608-3364@orcid.org>
     #overlay h2, #winScreen h2 {
         font-size: clamp(26px, 5vw, 42px);
         margin-bottom: 12px;
+        line-height: 1.2;
+        padding: 2px 0 6px;
     }
     #winScreen h2 {
         background: linear-gradient(90deg, #ffe600, #ff00cc, #00ffcc);
         -webkit-background-clip: text; background-clip: text;
         -webkit-text-fill-color: transparent;
+        color: #ffe600;
     }
 
     #overlay p, #winScreen p {
@@ -584,26 +595,24 @@ const GAME_H = 500;
 const GROUND_Y = 420;
 const TILE = 40;
 
-// ---- Difficulty increased ~10%: smaller gaps ----
 function generateLevel(idx) {
     const rng = mulberry32(idx * 9999 + 12345);
     const objects = [];
     const difficulty = idx;
     let x = 700;
     const length = 4200 + idx * 500;
-    // gaps ~10% tighter (was max(230, 340 - idx*5))
     const baseGap = Math.max(207, 306 - difficulty * 5.5);
 
     while (x < length) {
         const r = rng();
-        const gap = baseGap + rng() * 108; // was rng()*120 -> ~10% less slack
+        const gap = baseGap + rng() * 108;
         if (idx >= 5 && r < 0.10) {
             objects.push({type:'portal', mode:'fly', x:x});
             let fx = x + 160;
             const flyLen = 700 + rng()*400;
             while (fx < x + flyLen) {
                 objects.push({type:'block', x:fx, y: GROUND_Y - 60 - rng()*60, w:TILE, h:TILE});
-                fx += 234 + rng()*108; // ~10% tighter fly obstacles
+                fx += 234 + rng()*108;
             }
             objects.push({type:'portal', mode:'cube', x:fx});
             x = fx + 300;
@@ -791,7 +800,6 @@ class Game {
         saveState();
         this.player = { x: 120, y: GROUND_Y - TILE, vy: 0, size: TILE-4, onGround: true, rotation: 0, mode: 'cube', dead: false };
         this.camX = 0;
-        // Speed increased ~10% (was 4.2 + idx*0.12)
         this.speed = 4.6 + this.levelIdx * 0.14;
         this.progress = 0;
         this.particles = [];
@@ -875,7 +883,7 @@ class Game {
             p.onGround = true;
             if (this.jumpBuffer > 0) this.tryJump();
         } else if (p.mode==='cube') {
-            if (wasOnGround) this.coyote = 5; // slightly less coyote time (was 6) = a bit harder
+            if (wasOnGround) this.coyote = 5;
             p.onGround = false;
         }
         if (p.mode==='fly') {
@@ -884,7 +892,6 @@ class Game {
         }
 
         const px = p.x, py = p.y, ps = p.size;
-        // Hitbox slightly less forgiving (pad 8 -> 7)
         const pad = 7;
         const hx1=px+pad, hx2=px+ps-pad, hy1=py+pad, hy2=py+ps-pad;
         for (const o of this.level.objects) {
