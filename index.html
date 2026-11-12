@@ -500,8 +500,8 @@ Copyright (c) 2025-2026 Valentyn Kolesnikov <0009-0003-9608-3364@orcid.org>
         <div class="star-result" id="overlayStars" style="display:none"></div>
         <p id="overlayText"></p>
         <div class="btn-row">
-            <button onclick="game.retry()">Retry</button>
-            <button onclick="game.nextLevel()" id="nextBtn" style="display:none">Next</button>
+            <button onclick="game.retry()">Retry (Space)</button>
+            <button onclick="game.nextLevel()" id="nextBtn" style="display:none">Next (Enter)</button>
             <button onclick="game.toMenu()">Menu</button>
         </div>
     </div>
@@ -849,7 +849,24 @@ class Game {
             }
         };
         window.addEventListener('keydown', (e)=>{
-            if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); press(); }
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                const overlay = document.getElementById('overlay');
+                if (overlay.style.display === 'flex') {
+                    e.preventDefault();
+                    this.retry();
+                } else {
+                    e.preventDefault();
+                    press();
+                }
+            }
+            if (e.code === 'Enter') {
+                const overlay = document.getElementById('overlay');
+                const nextBtn = document.getElementById('nextBtn');
+                if (overlay.style.display === 'flex' && nextBtn.style.display !== 'none') {
+                    e.preventDefault();
+                    this.nextLevel();
+                }
+            }
         });
         window.addEventListener('keyup', (e)=>{
             if (e.code === 'Space' || e.code === 'ArrowUp') this.pressing=false;
